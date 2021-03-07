@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Extensions</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Jacob Poirier</Authors>
+    <PackageTags></PackageTags>
+    <NeutralLanguage></NeutralLanguage>
+    <Version>1.0.0</Version>
+    <PackageId>Extensions</PackageId>
+    <Product>Extensions</Product>
+    <Description>Helpful extension methods</Description>
+    <!--<LangVersion>9.0</LangVersion>-->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack" Version="5.10.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Summary.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--<OverLoads>
+  
+  <GetAttribute>
+    <Summary>Returns an attribute of a class or member</Summary>
+  </GetAttribute>
+
+  <Execute>
+    <Summary>Executes a method and can return a return value</Summary>
+  </Execute>
+  
+</OverLoads>-->
+
+
+
+<Data>
+
+  <Attributes>
+    
+    <GetAttribute>
+      <Summary>Returns an attribute of a class or member</Summary>
+    </GetAttribute>
+    
+  </Attributes>
+
+  <Reflection>
+    
+  </Reflection>
+
+  <Clients>
+
+    <IniConfig>
+
+      <Read>
+        <Summary>Reads ini config data</Summary>
+      </Read>
+
+      <Add>
+        <Summary>Adds a ini config setting</Summary>
+      </Add>
+      
+      <Update>
+        <Summary>Updates a ini config setting</Summary>
+      </Update>
+
+      <Remove>
+        <Summary>Removes a ini config setting</Summary>
+      </Remove>
+      
+    </IniConfig>
+    
+  </Clients>
+  
+</Data>
+
+
+
+<!--/// <summary>
+  ///
+  ///
+</summary>
+/// <param name="type"></param>
+<typeparam name="T"></typeparam>
+/// <returns></returns>-->
