@@ -98,7 +98,7 @@ namespace Extensions.Clients
             
             foreach (var line in lines)
             {
-                if (line.ContainsAll("[", "]"))
+                if (line.StartsWith("[") && line.EndsWith("]"))
                 {
                     currentSection = line.TrimStart('[').TrimEnd(']');
                 }

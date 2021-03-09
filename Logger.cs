@@ -11,11 +11,11 @@ namespace Extensions
             Console.WriteLine(message);
         }
 
-        public static void Log(this object ojb)
+        public static void Log(this object obj)
         {
-            foreach (var prop in ojb.GetType().GetProperties())
+            foreach (var prop in obj.GetType().GetProperties())
             {
-                Log($"{prop.Name} - {prop.GetValue(ojb)}");
+                Log($"{prop.Name} - {prop.GetValue(obj)}");
             }
         }
     }
