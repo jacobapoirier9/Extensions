@@ -11,18 +11,17 @@
     <Version>1.0.0</Version>
     <PackageId>Extensions</PackageId>
     <Product>Extensions</Product>
-    <Description>Helpful extension methods</Description>
-    <!--<LangVersion>9.0</LangVersion>-->
+    <Description>Helpfull extension methods</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceStack" Version="5.10.0" />
+    <Compile Remove="TestFiles\**" />
+    <EmbeddedResource Remove="TestFiles\**" />
+    <None Remove="TestFiles\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Summary.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <PackageReference Include="ServiceStack" Version="5.10.0" />
   </ItemGroup>
 
 </Project>

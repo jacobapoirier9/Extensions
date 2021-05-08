@@ -30,7 +30,23 @@ namespace Extensions
             return toReturn;
         }
 
-        public static string Encode(this string value) => Convert.ToBase64String(Encoding.ASCII.GetBytes(value));
-        public static string Decode(this string value) => Encoding.ASCII.GetString(Convert.FromBase64String(value));
+
+        /// <summary>
+        /// Base64 encodes a string
+        /// </summary>
+        public static string Encode(this string value)
+        {
+            return Convert.ToBase64String(Encoding.ASCII.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Decodes a base64 string
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string Decode(this string value)
+        {
+            return Encoding.ASCII.GetString(Convert.FromBase64String(value));
+        }
     }
 }

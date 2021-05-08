@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 
-namespace Extensions.Clients
+namespace Extensions.Services
 {
     /// <summary>
     /// A collection of methods to iteract with Gmail

@@ -1,13 +1,11 @@
 ﻿using System;
 
-namespace Extensions
+namespace Extensions.Attributes
 {
-    public interface IConfirmRunable
-    {
-        void Confirm();
-    }
-    
-    public class ConfirmRunAttribute : Attribute, IConfirmRunable
+    /// <summary>
+    /// Runs before a reflection execution
+    /// </summary>
+    public class ConfirmRunAttribute : Attribute
     {
         public void Confirm()
         {

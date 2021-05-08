@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ServiceStack;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -25,6 +27,37 @@ namespace Extensions
         }
 
         /// <summary>
+        /// Determines if a list contains any of the given elements
+        /// </summary>
+        public static bool ContainsAny(this IEnumerable<string> data, params string[] targets)
+        {
+            for (var i = 0; i < targets.Length; i++)
+            {
+                if (data.Contains(targets[i]))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if a list contains all of the given elements
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="targets"></param>
+        /// <returns></returns>
+        public static bool ContainsAll(this IEnumerable<string> data, params string[] targets)
+        {
+            var count = 0;
+            for (var i = 0; i < targets.Length; i++)
+            {
+                if (data.Contains(targets[i]))
+                    count++;
+            }
+
+            return count == targets.Length;
+        }
+
+        /// <summary>
         /// Prints items in a collection to the console
         /// </summary>
         public static void PrintAll<T>(this IEnumerable<T> data)
@@ -35,12 +68,6 @@ namespace Extensions
                 Debug.WriteLine($"{i}: {list[i]}");
                 Console.WriteLine($"{i}: {list[i]}");
             }
-        }
-
-        [Obsolete]
-        public static void CleanSplit(this IEnumerable<string> data, string pattern)
-        {
-            var toReturn = new List<string>();
         }
 
         /// <summary>
@@ -56,6 +83,19 @@ namespace Extensions
             {
                 data.Add(key, new List<T2>() { item });
             }
+        }
+
+        /// <summary>
+        /// Replaces all occurances of an item with another
+        /// </summary>
+        public static List<string> ReplaceAll(this IEnumerable<string> data, string replaceWhat, string replaceWith)
+        {
+            var toReturn = data.ToList();
+            for (var i = 0; i < toReturn.Count; i++)
+            {
+                toReturn[i] = data.ElementAt(i).ReplaceAll(replaceWhat, replaceWith);
+            }
+            return toReturn;
         }
     }
 }

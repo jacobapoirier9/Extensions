@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Extensions
+namespace Extensions.Attributes
 {
     /// <summary>
     /// Allows a summary to be placed to provide a summary for items

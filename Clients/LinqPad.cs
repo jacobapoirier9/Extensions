@@ -1,10 +1,8 @@
-﻿using Extensions.Clients;
-using ServiceStack;
+﻿using ServiceStack;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
 
-namespace Extensions
+namespace Extensions.Clients
 {
     /// <summary>
     /// A collection of methods to use LinqPad
@@ -21,7 +19,7 @@ namespace Extensions
             var data = CommandLine.Run(linqCommandPath ?? commandPath, linqFilePath);
 
             if (data.CleanSplit('[').Count > 1)
-                throw new TooManyTablesOutputtedException();
+                throw new Exception("LinqPad query outtputted too many tables");
             else
                 return data.FromJson<List<T>>();
             

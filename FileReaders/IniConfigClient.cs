@@ -1,12 +1,14 @@
-﻿using ServiceStack;
+﻿using Extensions.Assertions;
+using ServiceStack;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Extensions.Clients
+namespace Extensions.FileReaders
 {
+
     /// <summary>
     /// Holds a config entry for an ini config section
     /// </summary>
@@ -24,6 +26,8 @@ namespace Extensions.Clients
     {
         public string Name { get; internal set; }
         public List<IniConfigSetting> Settings { get; internal set; }
+
+        public bool IsEmpty => Settings == null || Settings.Count == 0;
     }
 
     /// <summary>
@@ -86,25 +90,34 @@ namespace Extensions.Clients
         private string iniFilePath;
 
         /// <summary>
+        /// Used to determine whether the file needs to be rewritten or not
+        /// </summary>
+        private bool rewrite;
+
+        /// <summary>
         /// Creates an instance of a ini config client
         /// </summary>
         public IniConfigClient(string iniFilePath)
         {
+            this.rewrite = false;
             this.iniFilePath = iniFilePath;
             var lines = File.ReadAllLines(iniFilePath);
 
+
             master = new Dictionary<string, List<IniConfigSetting>>();
-            var currentSection = "";
+            var currentSection = string.Empty;
             
             foreach (var line in lines)
             {
                 if (line.StartsWith("[") && line.EndsWith("]"))
                 {
                     currentSection = line.TrimStart('[').TrimEnd(']');
+                    master.Add(currentSection, new List<IniConfigSetting>());
                 }
+
                 else if (!string.IsNullOrEmpty(line))
                 {
-                    var data = line.Split('=');
+                    var data = line.Split(new char[] { '=' }, 2);
                     master.AddTo(currentSection, new IniConfigSetting() { SectionName = currentSection, Key = data[0], Value = data[1] });
                 }
             }
@@ -133,6 +146,7 @@ namespace Extensions.Clients
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Add'/>
         public void Add(string section)
         {
+            rewrite = true;
             master.Add(section, new List<IniConfigSetting>());
         }
 
@@ -142,6 +156,10 @@ namespace Extensions.Clients
             if (!master.ContainsKey(section))
                 Add(section);
 
+            if (master[section].Select(s => s.Key).Contains(key))
+                throw new KeyAlreadyExistsException();
+
+            rewrite = true;
             master[section].Add(new IniConfigSetting() { Key = key, Value = value });
         }
 
@@ -151,6 +169,7 @@ namespace Extensions.Clients
         public void Add(IniConfigSection section)
         {
             Assert.IsNotNull(section.Name);
+            rewrite = true;
             master.Add(section.Name, section.Settings ?? new List<IniConfigSetting>());
         }
 
@@ -158,6 +177,7 @@ namespace Extensions.Clients
         public void Add(IniConfigSetting setting)
         {
             Assert.HasNoNullProperties(setting);
+            rewrite = true;
             Add(setting.SectionName, setting.Key, setting.Value);
         }
 
@@ -165,6 +185,7 @@ namespace Extensions.Clients
         public void Update(IniConfigSetting setting)
         {
             Assert.HasNoNullProperties(setting);
+            rewrite = true;
             var toRemove = Settings.Find(s => s.SectionName == setting.SectionName && s.Key == setting.Key);
             Remove(toRemove.SectionName, toRemove.Key);
         }
@@ -172,12 +193,14 @@ namespace Extensions.Clients
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Remove'/>
         public void Remove(IniConfigSection section)
         {
+            rewrite = true;
             Remove(section.Name);
         }
 
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Remove'/>
         public void Remove(IniConfigSetting setting)
         {
+            rewrite = true;
             Remove(setting.SectionName, setting.Key);
         }
         // ----------------------------------------------------------------------------------
@@ -185,6 +208,7 @@ namespace Extensions.Clients
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Update'/>
         public void Update(string section, string key, string value)
         {
+            rewrite = true;
             Remove(section, key);
             Add(section, key, value);
         }
@@ -192,12 +216,14 @@ namespace Extensions.Clients
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Remove'/>
         public void Remove(string section)
         {
+            rewrite = true;
             master.RemoveKey(section);
         }
 
         /// <include file='Summary.xml' path='Data/Clients/IniConfig/Remove'/>
         public void Remove(string section, string key)
         {
+            rewrite = true;
             master[section].RemoveAll(setting => setting.Key == key);
         }
 
@@ -206,16 +232,19 @@ namespace Extensions.Clients
         /// </summary>
         public void Dispose()
         {
-            using (var writer = new StreamWriter(iniFilePath))
+            if (rewrite)
             {
-                foreach (var section in master)
+                using (var writer = new StreamWriter(iniFilePath))
                 {
-                    writer.WriteLine($"[{section.Key}]");
-                    foreach (var line in section.Value)
+                    foreach (var section in master)
                     {
-                        writer.WriteLine($"{line.Key}={line.Value}");
+                        writer.WriteLine($"[{section.Key}]");
+                        foreach (var line in section.Value ?? new List<IniConfigSetting>())
+                        {
+                            writer.WriteLine($"{line.Key}={line.Value}");
+                        }
+                        writer.WriteLine();
                     }
-                    writer.WriteLine();
                 }
             }
         }
@@ -336,6 +365,109 @@ namespace Extensions.Clients
             }
         }
 
+        #endregion
+    }
+
+
+
+
+
+
+
+
+
+    /// <summary>
+    /// Holds config file data for easy readablitity
+    /// </summary>
+    public class SimpleIniConfigClient : IDisposable
+    {
+        /// <summary>
+        /// Path of the ini config file
+        /// </summary>
+        public string FilePath => iniFilePath;
+
+        /// <summary>
+        /// A master collection of ini config settings
+        /// </summary>
+        private Dictionary<string, List<IniConfigSetting>> master;
+
+        /// <summary>
+        /// The file path to the ini config file
+        /// </summary>
+        private string iniFilePath;
+
+        /// <summary>
+        /// Creates an instance of a ini config client
+        /// </summary>
+        public SimpleIniConfigClient(string iniFilePath)
+        {
+            this.iniFilePath = iniFilePath;
+            var lines = File.ReadAllLines(iniFilePath);
+
+            master = new Dictionary<string, List<IniConfigSetting>>();
+            var currentSection = string.Empty;
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("[") && line.EndsWith("]"))
+                {
+                    currentSection = line.TrimStart('[').TrimEnd(']');
+                    master.Add(currentSection, new List<IniConfigSetting>());
+                }
+
+                else if (!string.IsNullOrEmpty(line))
+                {
+                    var data = line.Split(new char[] { '=' }, 2);
+                    master.AddTo(currentSection, new IniConfigSetting() { SectionName = currentSection, Key = data[0], Value = data[1] });
+                }
+            }
+        }
+
+        /// <include file='Summary.xml' path='Data/Clients/IniConfig/Read'/>
+        public IniConfigSection Read(string section)
+        {
+            var data = new IniConfigSection() { Name = section };
+
+            foreach (var item in master[section])
+            {
+                data.Settings.Add(item);
+            }
+
+            return data;
+            //return master[section];
+        }
+
+        /// <include file='Summary.xml' path='Data/Clients/IniConfig/Read'/>
+        public IniConfigSetting Read(string section, string key)
+        {
+            return master[section].Find(setting => setting.Key == key);
+        }
+
+        /// <summary>
+        /// Rewrites the file with any updated data
+        /// </summary>
+        public void Dispose()
+        {
+        }
+        #region Static Methods
+
+        /// <include file='Summary.xml' path='Data/Clients/IniConfig/Read'/>
+        public static IniConfigSection ReadFrom(string iniFilePath, string section)
+        {
+            using (var client = new SimpleIniConfigClient(iniFilePath))
+            {
+                return client.Read(section);
+            }
+        }
+
+        /// <include file='Summary.xml' path='Data/Clients/IniConfig/Read'/>
+        public static IniConfigSetting ReadFrom(string iniFilePath, string section, string key)
+        {
+            using (var client = new SimpleIniConfigClient(iniFilePath))
+            {
+                return client.Read(section, key);
+            }
+        }
         #endregion
     }
 }
